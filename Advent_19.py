@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 class Register():
     """"""
-    def __init__(self, r, instruction=[], ip=""):
+    def __init__(self, r, instruction=[]):
         self.reg = deepcopy(r)
         self.opcodes = {'addi': self.addi, 
                         'addr': self.addr, 
@@ -30,6 +30,7 @@ class Register():
         self.instruction = []
         if instruction:
             self.get_instruction(instruction)
+    
     
     def get_instruction(self, instruction):
         assert len(instruction) == 4, "Invalid instruction, length must be 4."
@@ -124,7 +125,6 @@ class Register():
             self.opcodes[self.op](*self.instruction)
         else:
             logger.error("Need at least an opcode or opcode number!")
-        return self.reg
     
     
     def do_instructions(self, instructions):
@@ -132,6 +132,7 @@ class Register():
             logger.error("Need samples to learn number-opcode equivalence, and run learn_opcode_numbers")
         for instr in instructions:
             self.do_instruction(instruction=instr)
+        return self.reg
     
     
     def learn_opcode_numbers(self, samples):
@@ -158,7 +159,14 @@ class Register():
                             vals.remove(index)
             if len(self.num_op_dict) == len(self.opcodes.keys()):
                 break
-
+    
+    def do_ip_instructions(self, instructions, ip):
+        self.ip = ip
+        counter_ip = self.reg[self.ip]
+        while counter_ip < len(instructions):
+            self.reg[self.ip] = counter_ip
+            self.do_instruction(instruction=instructions[counter_ip])
+            counter_ip = self.reg[self.ip] + 1
 
 
 
@@ -219,3 +227,7 @@ test.do_instructions(instructions)
 print test.reg[0]
 
 
+#Advent 19
+ip, program = parse_test_program("Advent_19_input.txt")
+prog = Register([0,0,0,0,0])
+prog.do_ip_instructions(program, ip)
