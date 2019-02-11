@@ -3,7 +3,28 @@ treee = [9, 11, 7, 3, 5, 4, 3, 5, 1, 7, 0, 11, 7, 1, 2, 1, 9, 4, 6, 9, 5, 8, 1, 
 
 #PART 1
 
-def find_child(text,children,metadata, mtd_list):
+def find_child(text, children, metadata, mtd_list):
+  """
+  For a tree with nodes consisting of :
+    - A header, which is always exactly two numbers:
+           * The quantity of child nodes.
+           * The quantity of metadata entries.
+    - Zero or more child nodes (as specified in the header).
+    - One or more metadata entries (as specified in the header).
+  Each child node is itself a node that has its own header, child nodes, and metadata.
+  
+  Parameters
+  --------
+  text - tree as a list (without root header)
+  children - number of children for current node
+  metadata - number of metadata entries for current node
+  mtd_list - list of metadata already identified
+  
+  Returns
+  -------
+  mtd_list - list of metadata for tree
+  text - remaining text (tree). "" in last loop.
+  """
   ch_c = 0
   if children > 0:
       while ch_c < children:
@@ -20,32 +41,30 @@ def find_child(text,children,metadata, mtd_list):
     
 
 metadata = []
-#metadata, text = find_child(treee[2:], treee[0], treee[1], metadata)
+metadata, text = find_child(treee[2:], treee[0], treee[1], metadata)
 print metadata
 print sum(metadata)
     
 #PART 2
 
-def find_metadata(text,children,metadata):
+def find_metadata(text, children, metadata):
+  """
+  Finds the value of the root node.
+  """
   ch_metad = []
-  #print children, metadata
   if children > 0:
       while len(ch_metad) < children:
           child = [text[0], text[1]]
-          #print "ch", child
           text = text[2:]
           mtd, text = find_metadata(text, child[0], child[1])
-          #print mtd
           ch_metad.append(mtd) 
       mtds = text[:metadata]
-      #print "children", ch_metad
       mtd = 0
       for m in mtds:
         if m <= children:
           mtd += ch_metad[m-1]
       text = text[metadata:]
-      #print "mtd", mtd
-  else:
+  else: #sum of node metadata
       mtd = sum(text[:metadata])
       text = text[metadata:]
   return mtd, text
