@@ -26,10 +26,13 @@ def from_grid_to_graph(grid):
 
 
 def in_range_positions(you_coords, enemy, grid, units):
+    """
+    Find free four nearest positions to enemies (target positions).
+    """
     assert enemy in ["E", "G"], "Who are you?"
     x,y = you_coords
     if enemy in [grid[x-1,y], grid[x,y-1], grid[x,y+1], grid[x+1,y]]:
-        return [[x,y]]
+        return [[x,y]] #Enemy in range: don't move
     in_range = []
     for i, j in sorted(units[enemy].keys()):
         if grid[i-1,j] == ".":
@@ -46,6 +49,9 @@ def in_range_positions(you_coords, enemy, grid, units):
 
 
 def reachability_graph(you_coords, ids, g):
+    """
+    Reachability graph.
+    """
     g_tmp = deepcopy(g)
     
     #Removing occupied positions
@@ -60,6 +66,9 @@ def reachability_graph(you_coords, ids, g):
 
 
 def nearest_in_range(you_coords, in_range, g_tmp):
+    """
+    Choose target position (nearest in range position)
+    """
     inRange_dists = defaultdict(list)
     #Evaluating distances of in range positions
     for i,j in sorted(in_range):
@@ -74,6 +83,9 @@ def nearest_in_range(you_coords, in_range, g_tmp):
 
 
 def get_moving(target, you, you_coords, g_tmp, units, ids, grid):
+    """
+    Move towards target position.
+    """
     if target == None:
         return you_coords, units, ids, grid
     distances = nx.single_source_shortest_path_length(g_tmp, str(target[0])+"-"+str(target[1]))
@@ -93,6 +105,9 @@ def get_moving(target, you, you_coords, g_tmp, units, ids, grid):
 
 
 def we_attack(enemy, you, you_coords, units, ids, grid, elf_attack=3):
+    """
+    Attack any in range enemies
+    """
     x,y = you_coords
     #Do we attack?
     enem_coords = [[[x-1,y], [x,y-1], [x,y+1], [x+1,y]][i] for i in np.where(np.array([grid[x-1,y], grid[x,y-1], grid[x,y+1], grid[x+1,y]]) == enemy)[0]]
@@ -111,13 +126,6 @@ def we_attack(enemy, you, you_coords, units, ids, grid, elf_attack=3):
             del units[enemy][tuple(victim[0])]
             grid[victim[0][0], victim[0][1]] = "."
     return units, ids, grid
-
-
-#TODO ID individuals, since they change identity (one dies, the other one moves and therefore "usurps" identity)
-#https://github.com/ShaneMcC/aoc-2018/tree/master/15/tests
-
-
-
 
 
 
@@ -176,8 +184,13 @@ for j in units.keys():
 
 elves = len(units["E"])
 attack_power = 3
+units2 = {"E":[]}
 while len(units2["E"]) != elves:
-    grid2, units2, rounds = game(attack_power, grid, g, units, ids)
+    grid2 = deepcopy(grid)
+    g2 = deepcopy(g)
+    units2 = deepcopy(units)
+    ids2 = deepcopy(ids)
+    grid2, units2, rounds = game(attack_power, grid2, g2, units2, ids2)
     #Part 1
     if attack_power == 3:
         if "G" in grid2:
@@ -186,4 +199,4 @@ while len(units2["E"]) != elves:
             print sum(units2["E"].values())*rounds
     attack_power += 1
 
-
+print sum(units2["E"].values())*rounds #Part 2
